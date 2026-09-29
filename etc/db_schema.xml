@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="sales_order">
+        <column xsi:type="varchar" name="returnsentry_visitor_id" nullable="true" length="100" comment="ReturnSentry Visitor ID"/>
+        <column xsi:type="varchar" name="returnsentry_action" nullable="true" length="32" comment="ReturnSentry Checkout Action"/>
+        <column xsi:type="varchar" name="returnsentry_observed_action" nullable="true" length="32" comment="ReturnSentry Checkout Action Observed Only"/>
+        <column xsi:type="varchar" name="returnsentry_level" nullable="true" length="16" comment="ReturnSentry Risk Level"/>
+        <column xsi:type="smallint" name="returnsentry_score" unsigned="true" nullable="true" comment="ReturnSentry Score"/>
+        <column xsi:type="smallint" name="returnsentry_return_paid" unsigned="true" nullable="true" comment="ReturnSentry Paid Returns Announced"/>
+        <column xsi:type="decimal" name="returnsentry_return_label_cost" scale="4" precision="20" nullable="true" comment="ReturnSentry Announced Return Label Cost"/>
+        <column xsi:type="smallint" name="returnsentry_erased" unsigned="true" nullable="true" comment="ReturnSentry Customer Erased"/>
+    </table>
+    <table name="sales_order_grid">
+        <column xsi:type="varchar" name="returnsentry_action" nullable="true" length="32" comment="ReturnSentry Checkout Action"/>
+        <index referenceId="SALES_ORDER_GRID_RETURNSENTRY_ACTION" indexType="btree">
+            <column name="returnsentry_action"/>
+        </index>
+    </table>
+    <table name="returnsentry_return" resource="default" engine="innodb" comment="ReturnSentry Returns">
+        <column xsi:type="varchar" name="external_id" nullable="false" length="200" comment="Return External ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Order ID"/>
+        <column xsi:type="datetime" name="requested_at" nullable="false" comment="Requested At"/>
+        <column xsi:type="mediumtext" name="record" nullable="false" comment="Standard Return Record"/>
+        <column xsi:type="text" name="assessment" nullable="true" comment="Return Assessment"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="external_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="RETURNSENTRY_RETURN_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="returnsentry_return" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="CASCADE"/>
+        <index referenceId="RETURNSENTRY_RETURN_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+    </table>
+    <table name="returnsentry_inspection" resource="default" engine="innodb" comment="ReturnSentry Inspections Waiting To Be Sent">
+        <column xsi:type="varchar" name="external_id" nullable="false" length="200" comment="Inspection External ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Order ID"/>
+        <column xsi:type="mediumtext" name="record" nullable="false" comment="Standard Inspection Record"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="external_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="RETURNSENTRY_INSPECTION_ORDER_ID_SALES_ORDER_ENTITY_ID"
+                    table="returnsentry_inspection" column="order_id" referenceTable="sales_order"
+                    referenceColumn="entity_id" onDelete="CASCADE"/>
+        <index referenceId="RETURNSENTRY_INSPECTION_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+    </table>
+    <table name="returnsentry_refund_authorization" resource="default" engine="innodb" comment="ReturnSentry Refund Authorizations">
+        <column xsi:type="varchar" name="external_id" nullable="false" length="200" comment="Authorization External ID"/>
+        <column xsi:type="int" name="order_id" unsigned="true" nullable="false" comment="Order ID"/>
+        <column xsi:type="varchar" name="decision" nullable="false" length="32" comment="Decision"/>
+        <column xsi:type="decimal" name="requested_amount" scale="4" precision="20" nullable="false" comment="Requested Amount"/>
+        <column xsi:type="decimal" name="approved_amount" scale="4" precision="20" nullable="false" comment="Approved Amount"/>
+        <column xsi:type="smallint" name="observed" unsigned="true" nullable="false" default="0" comment="Observed Only, Not Enforced"/>
+        <column xsi:type="smallint" name="fraud_evidence" unsigned="true" nullable="false" default="0" comment="Decision Cites Fraud Evidence"/>
+        <column xsi:type="varchar" name="note" nullable="true" length="1000" comment="Release or Override Note"/>
+        <column xsi:type="varchar" name="category" nullable="true" length="32" comment="Claim Category"/>
+        <column xsi:type="datetime" name="claimed_at" nullable="true" comment="Claimed At"/>
+        <column xsi:type="datetime" name="hold_until" nullable="true" comment="Hold Until"/>
+        <column xsi:type="text" name="carrier" nullable="true" comment="Carrier Summary"/>
+        <column xsi:type="varchar" name="decided_by" nullable="true" length="120" comment="Overriding Administrator"/>
+        <column xsi:type="smallint" name="override_rejected" unsigned="true" nullable="false" default="0" comment="Override Refused by ReturnSentry"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false" default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="external_id"/>
+        </constraint>
+        <index referenceId="RETURNSENTRY_REFUND_AUTHORIZATION_ORDER_ID" indexType="btree">
+            <column name="order_id"/>
+        </index>
+    </table>
+    <table name="returnsentry_sync_retry" resource="default" engine="innodb" comment="ReturnSentry Sync Retries">
+        <column xsi:type="varchar" name="entity_type" nullable="false" length="16" comment="Entity Type"/>
+        <column xsi:type="varchar" name="entity_id" nullable="false" length="200" comment="Entity ID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" default="0" comment="Store ID"/>
+        <column xsi:type="smallint" name="attempts" unsigned="true" nullable="false" default="0" comment="Attempts"/>
+        <column xsi:type="datetime" name="next_attempt_at" nullable="false" comment="Next Attempt At"/>
+        <column xsi:type="varchar" name="last_error" nullable="true" length="1000" comment="Last Error"/>
+        <column xsi:type="datetime" name="failed_at" nullable="true" comment="Last Error At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_type"/>
+            <column name="entity_id"/>
+        </constraint>
+        <index referenceId="RETURNSENTRY_SYNC_RETRY_NEXT_ATTEMPT_AT" indexType="btree">
+            <column name="next_attempt_at"/>
+        </index>
+    </table>
+</schema>

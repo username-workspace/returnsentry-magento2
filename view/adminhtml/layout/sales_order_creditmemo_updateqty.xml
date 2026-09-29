@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="submit_before">
+            <block class="Magento\Backend\Block\Template" name="returnsentry.refund.override" template="ReturnSentry_Connector::refund-override.phtml" aclResource="ReturnSentry_Connector::refund_override">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">ReturnSentry\Connector\ViewModel\RefundOverride</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

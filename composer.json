@@ -1,0 +1,82 @@
+{
+    "name": "returnsentry/module-connector",
+    "description": "ReturnSentry for Magento Open Source, Mage-OS and Adobe Commerce: live sync, checkout, return and refund decisions, beacon",
+    "version": "1.0.0",
+    "type": "magento2-module",
+    "license": "MIT",
+    "keywords": [
+        "magento2",
+        "mage-os",
+        "returns",
+        "refunds",
+        "fraud"
+    ],
+    "require": {
+        "php": "~8.2.0||~8.3.0||~8.4.0||~8.5.0",
+        "magento/framework": "^103.0.7",
+        "magento/framework-message-queue": "^100.4.7",
+        "magento/module-authorization": "^100.4.7",
+        "magento/module-backend": "^102.0.7",
+        "magento/module-config": "^101.2.7",
+        "magento/module-csp": "^100.4.6",
+        "magento/module-customer": "^103.0.7",
+        "magento/module-payment": "^100.4.7",
+        "magento/module-quote": "^101.2.7",
+        "magento/module-sales": "^103.0.7",
+        "magento/module-store": "^101.1.7",
+        "magento/module-ui": "^101.2.7"
+    },
+    "require-dev": {
+        "bitexpert/phpstan-magento": "^0.44",
+        "mage-os/framework": "3.5.0",
+        "magento/magento-coding-standard": ">=38",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^10.5"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://repo.mage-os.org/"
+        }
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "ReturnSentry\\Connector\\": ""
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "laminas/laminas-dependency-plugin": false,
+            "mage-os/composer-dependency-version-audit-plugin": false,
+            "mage-os/composer-root-update-plugin": false,
+            "mage-os/magento-composer-installer": false,
+            "magento/composer-dependency-version-audit-plugin": false,
+            "magento/composer-root-update-plugin": false,
+            "magento/magento-composer-installer": false,
+            "phpstan/extension-installer": true
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ReturnSentry\\Connector\\Test\\": "Test/"
+        }
+    },
+    "scripts": {
+        "lint": "find . -path ./vendor -prune -o \\( -name '*.php' -o -name '*.phtml' \\) -print0 | xargs -0 -n1 php -l > /dev/null",
+        "phpcs": "phpcs",
+        "phpstan": "phpstan analyse --memory-limit=2G --no-progress",
+        "test": "phpunit --testsuite unit",
+        "check": [
+            "@lint",
+            "@phpcs",
+            "@phpstan",
+            "@test"
+        ],
+        "test:e2e": "phpunit --testsuite integration"
+    }
+}

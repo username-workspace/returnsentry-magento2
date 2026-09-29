@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <htmlContent name="returnsentry_customer_tab_content">
+        <block class="ReturnSentry\Connector\Block\Adminhtml\CustomerTab" name="returnsentry_customer_tab" template="ReturnSentry_Connector::risk-panel.phtml">
+            <arguments>
+                <argument name="sort_order" xsi:type="number">200</argument>
+                <argument name="view_model" xsi:type="object">ReturnSentry\Connector\ViewModel\RiskPanel</argument>
+                <argument name="context" xsi:type="string">customer</argument>
+            </arguments>
+        </block>
+    </htmlContent>
+</form>

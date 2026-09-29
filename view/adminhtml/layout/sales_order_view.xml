@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="order_additional_info">
+            <block class="Magento\Backend\Block\Template" name="returnsentry.order.panel" template="ReturnSentry_Connector::risk-panel.phtml" aclResource="Magento_Sales::actions_view">
+                <arguments>
+                    <argument name="view_model" xsi:type="object">ReturnSentry\Connector\ViewModel\RiskPanel</argument>
+                    <argument name="context" xsi:type="string">order</argument>
+                </arguments>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

@@ -1,0 +1,8 @@
+type Cart {
+    returnsentry_return_terms: ReturnSentryReturnTerms! @doc(description: "Return terms to show the shopper before the place order button. Once shown, send the header X-ReturnSentry-Return-Terms-Displayed: 1 with placeOrder.") @resolver(class: "ReturnSentry\\Connector\\Model\\Resolver\\ReturnTerms")
+}
+
+type ReturnSentryReturnTerms @doc(description: "Return terms of the cart's customer.") {
+    paid: Boolean! @doc(description: "True when returning the items is at the shopper's cost.")
+    label_cost: Float @doc(description: "Return label cost deducted from the refund, in the website's base currency. Null when returns are free, or when the shopper returns at their own cost without a label.")
+}

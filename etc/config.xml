@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <returnsentry>
+            <general>
+                <enabled>0</enabled>
+                <secret_key backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+                <checkout_timeout_ms>800</checkout_timeout_ms>
+                <timeout_ms>3000</timeout_ms>
+            </general>
+            <features>
+                <checkout_decisions>observe</checkout_decisions>
+                <return_assessment>1</return_assessment>
+                <refund_authorization>observe</refund_authorization>
+                <beacon>1</beacon>
+                <excluded_payment_methods>globale</excluded_payment_methods>
+            </features>
+            <privacy>
+                <pseudonymize>0</pseudonymize>
+                <salt backend_model="Magento\Config\Model\Config\Backend\Encrypted"/>
+            </privacy>
+            <mapping>
+                <return_reasons>{"wrong_size":{"shop":"Wrong Size","standard":"size_fit"},"wrong_color":{"shop":"Wrong Color","standard":"not_as_described"},"out_of_service":{"shop":"Out of Service","standard":"damaged_defective"},"other":{"shop":"Other","standard":"other"}}</return_reasons>
+                <refund_with_return>return</refund_with_return>
+                <refund_adjustment_only>commercial_gesture</refund_adjustment_only>
+                <refund_not_shipped>other</refund_not_shipped>
+                <refund_shipped>other</refund_shipped>
+            </mapping>
+            <beacon>
+                <loading>consent</loading>
+                <consent_event>returnsentry:consent</consent_event>
+            </beacon>
+        </returnsentry>
+    </default>
+</config>

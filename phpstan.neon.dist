@@ -1,0 +1,13 @@
+includes:
+    - vendor/bitexpert/phpstan-magento/extension.neon
+parameters:
+    level: 6
+    treatPhpDocTypesAsCertain: false
+    paths:
+        - .
+    excludePaths:
+        - vendor/*
+        - Test/*
+    fileExtensions:
+        - php
+        - phtml

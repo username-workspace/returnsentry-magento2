@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
+    <group id="returnsentry">
+        <job name="returnsentry_sync_retry" instance="ReturnSentry\Connector\Cron\RetrySync" method="execute">
+            <schedule>* * * * *</schedule>
+        </job>
+        <job name="returnsentry_apply_retention" instance="ReturnSentry\Connector\Cron\ApplyRetention" method="execute">
+            <schedule>17 3 * * *</schedule>
+        </job>
+    </group>
+</config>

@@ -1,0 +1,11 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \ReturnSentry\Connector\ViewModel\AnnouncedReturnTerms $viewModel */
+$viewModel = $block->getData('view_model');
+$notice = $viewModel->forOrderId((int) $block->getData('order_id'));
+if ($notice === null) {
+    return;
+}
+?>
+<p><?= $escaper->escapeHtml($notice) ?></p>

@@ -1,0 +1,164 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <preference for="ReturnSentry\Connector\Api\ReturnReporterInterface" type="ReturnSentry\Connector\Model\ReturnReporter"/>
+    <preference for="ReturnSentry\Connector\Api\InspectionReporterInterface" type="ReturnSentry\Connector\Model\InspectionReporter"/>
+    <preference for="ReturnSentry\Connector\Api\CustomerErasureInterface" type="ReturnSentry\Connector\Model\CustomerErasure"/>
+    <preference for="ReturnSentry\Connector\Api\CartReturnTermsInterface" type="ReturnSentry\Connector\Model\Checkout\CartReturnTerms"/>
+    <preference for="ReturnSentry\Connector\Model\Http\TransportInterface" type="ReturnSentry\Connector\Model\Http\CurlTransport"/>
+
+    <virtualType name="ReturnSentryLogHandler" type="Magento\Framework\Logger\Handler\Base">
+        <arguments>
+            <argument name="fileName" xsi:type="string">/var/log/returnsentry.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ReturnSentryLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
+            <argument name="name" xsi:type="string">returnsentry</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="file" xsi:type="object">ReturnSentryLogHandler</item>
+            </argument>
+        </arguments>
+    </virtualType>
+    <type name="ReturnSentry\Connector\Model\Sync\Publisher">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Model\Sync\Consumer">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Cron\RetrySync">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Model\Checkout\Assessor">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Model\Returns\ReturnService">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Model\Refund\Gate">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\ViewModel\RiskPanel">
+        <arguments>
+            <argument name="logger" xsi:type="object">ReturnSentryLogger</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Config\Model\Config\TypePool">
+        <arguments>
+            <argument name="sensitive" xsi:type="array">
+                <item name="returnsentry/general/secret_key" xsi:type="string">1</item>
+                <item name="returnsentry/privacy/salt" xsi:type="string">1</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Csp\Model\CompositePolicyCollector">
+        <arguments>
+            <argument name="collectors" xsi:type="array">
+                <item name="returnsentry_beacon" xsi:type="object" sortOrder="99">ReturnSentry\Connector\Model\Csp\BeaconPolicyCollector\Proxy</item>
+            </argument>
+        </arguments>
+    </type>
+
+    <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid">
+        <arguments>
+            <argument name="columns" xsi:type="array">
+                <item name="returnsentry_action" xsi:type="string">sales_order.returnsentry_action</item>
+            </argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="ReturnSentry\Connector\Observer\PublishCustomer" type="ReturnSentry\Connector\Observer\PublishSync">
+        <arguments>
+            <argument name="type" xsi:type="string">customer</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ReturnSentry\Connector\Observer\PublishErasure" type="ReturnSentry\Connector\Observer\PublishSync">
+        <arguments>
+            <argument name="type" xsi:type="string">erasure</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ReturnSentry\Connector\Observer\PublishOrder" type="ReturnSentry\Connector\Observer\PublishSync">
+        <arguments>
+            <argument name="type" xsi:type="string">order</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ReturnSentry\Connector\Observer\PublishCreditmemo" type="ReturnSentry\Connector\Observer\PublishSync">
+        <arguments>
+            <argument name="type" xsi:type="string">creditmemo</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ReturnSentry\Connector\Observer\PublishRma" type="ReturnSentry\Connector\Observer\PublishSync">
+        <arguments>
+            <argument name="type" xsi:type="string">rma</argument>
+        </arguments>
+    </virtualType>
+
+    <virtualType name="ReturnSentry\Connector\Block\Adminhtml\System\Config\ReturnReasonMap" type="ReturnSentry\Connector\Block\Adminhtml\System\Config\TaxonomyMap">
+        <arguments>
+            <argument name="options" xsi:type="object">ReturnSentry\Connector\Model\Source\ReturnReason</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="ReturnSentry\Connector\Block\Adminhtml\System\Config\RefundCodeMap" type="ReturnSentry\Connector\Block\Adminhtml\System\Config\TaxonomyMap">
+        <arguments>
+            <argument name="options" xsi:type="object">ReturnSentry\Connector\Model\Source\RefundCategory</argument>
+        </arguments>
+    </virtualType>
+
+    <type name="ReturnSentry\Connector\Model\Refund\Override">
+        <arguments>
+            <argument name="auth" xsi:type="object">Magento\Backend\Model\Auth\Proxy</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Payment\Model\MethodList">
+        <plugin name="returnsentry_restrict_payment_methods" type="ReturnSentry\Connector\Plugin\RestrictPaymentMethods"/>
+    </type>
+    <type name="Magento\Sales\Model\Order\RefundAdapterInterface">
+        <plugin name="returnsentry_authorize_refund" type="ReturnSentry\Connector\Plugin\AuthorizeRefund"/>
+    </type>
+    <type name="Magento\Sales\Api\RefundOrderInterface">
+        <plugin name="returnsentry_explain_refund_stop" type="ReturnSentry\Connector\Plugin\ExplainRefundStop"/>
+    </type>
+    <type name="Magento\Sales\Api\RefundInvoiceInterface">
+        <plugin name="returnsentry_explain_refund_stop" type="ReturnSentry\Connector\Plugin\ExplainRefundStop"/>
+    </type>
+
+    <type name="ReturnSentry\Connector\Console\Command\Backfill">
+        <arguments>
+            <argument name="backfill" xsi:type="object">ReturnSentry\Connector\Model\Backfill\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Console\Command\Connect">
+        <arguments>
+            <argument name="settings" xsi:type="object">ReturnSentry\Connector\Model\Settings\Proxy</argument>
+            <argument name="tester" xsi:type="object">ReturnSentry\Connector\Model\ConnectionTester\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="ReturnSentry\Connector\Console\Command\ApplyProfile">
+        <arguments>
+            <argument name="settings" xsi:type="object">ReturnSentry\Connector\Model\Settings\Proxy</argument>
+        </arguments>
+    </type>
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="returnsentry_backfill" xsi:type="object">ReturnSentry\Connector\Console\Command\Backfill</item>
+                <item name="returnsentry_connect" xsi:type="object">ReturnSentry\Connector\Console\Command\Connect</item>
+                <item name="returnsentry_profile" xsi:type="object">ReturnSentry\Connector\Console\Command\ApplyProfile</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

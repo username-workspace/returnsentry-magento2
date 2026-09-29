@@ -1,0 +1,32 @@
+<?php
+/** @var \ReturnSentry\Connector\Block\Adminhtml\System\Config\ConnectionTest $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+?>
+<button type="button" class="action-default" id="returnsentry-connection-test">
+    <span><?= $escaper->escapeHtml(__('Test the connection')) ?></span>
+</button>
+<div id="returnsentry-connection-result" class="message no-display"></div>
+<?php
+$testUrl = $escaper->escapeJs($block->getTestUrl());
+$failure = $escaper->escapeJs((string) __('The test could not run.'));
+$script = <<<JS
+require(['jquery'], function ($) {
+    $('#returnsentry-connection-test').on('click', function () {
+        var result = $('#returnsentry-connection-result');
+        $.post('{$testUrl}', {form_key: window.FORM_KEY})
+            .done(function (response) {
+                result.text(response.message)
+                    .removeClass('message-success message-error')
+                    .addClass(response.success ? 'message-success' : 'message-error')
+                    .removeClass('no-display');
+            })
+            .fail(function () {
+                result.text('{$failure}')
+                    .removeClass('message-success no-display').addClass('message-error');
+            });
+    });
+});
+JS;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $script, false) ?>

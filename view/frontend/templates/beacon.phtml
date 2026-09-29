@@ -1,0 +1,129 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+/** @var \ReturnSentry\Connector\ViewModel\Beacon $viewModel */
+$viewModel = $block->getData('view_model');
+$settings = $viewModel->settings();
+if ($settings === null) {
+    return;
+}
+$json = json_encode($settings, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES);
+$script = <<<'JS'
+(function (settings) {
+    window.ReturnSentry = window.ReturnSentry || {q: []};
+    var loaded = false;
+    function run(command) {
+        window.ReturnSentry.q.push(command);
+    }
+    function load() {
+        if (loaded) {
+            return;
+        }
+        loaded = true;
+        var tag = document.createElement('script');
+        tag.src = settings.src;
+        tag.async = true;
+        tag.setAttribute('data-key', settings.key);
+        document.head.appendChild(tag);
+    }
+    function forgetVisitor() {
+        document.cookie = 'rs_vid=; Max-Age=0; Path=/; SameSite=Lax'
+            + (location.protocol === 'https:' ? '; Secure' : '');
+        try {
+            window.localStorage.removeItem('rs_vid');
+        } catch (error) {
+        }
+    }
+    function consent(granted) {
+        document.cookie = 'rs_consent=' + (granted ? '1' : '') + '; Path=/; SameSite=Lax'
+            + (granted ? '' : '; Max-Age=0') + (location.protocol === 'https:' ? '; Secure' : '');
+        if (granted) {
+            load();
+        } else if (!settings.loadWithoutConsent) {
+            forgetVisitor();
+        }
+        run(function () {
+            window.ReturnSentry.consent(granted);
+        });
+    }
+    function track(event) {
+        run(function () {
+            window.ReturnSentry.track(event);
+        });
+    }
+    run(function () {
+        window.ReturnSentry.page(settings.page, settings.step || undefined);
+    });
+    if (settings.checkoutSteps) {
+        var declareStep = function () {
+            var step = location.hash.indexOf('payment') > -1 ? 'payment' : 'shipping';
+            run(function () {
+                window.ReturnSentry.page('checkout', step);
+            });
+        };
+        declareStep();
+        window.addEventListener('hashchange', declareStep);
+        track('checkout');
+    }
+    document.addEventListener('submit', function (event) {
+        if (event.target && event.target.id === 'login-form') {
+            track('login');
+        }
+    }, true);
+    if (typeof window.requirejs === 'function') {
+        window.requirejs(['jquery'], function ($) {
+            $(document).on('ajax:addToCart', function () {
+                track('add_to_cart');
+            });
+        }, function () {});
+    }
+    if (settings.loadWithoutConsent) {
+        load();
+        run(function () {
+            window.ReturnSentry.exempt();
+        });
+    }
+    function cookieGrants(value, expected) {
+        var edges = /^["'{}\[\] ]+|["'{}\[\] ]+$/g;
+        function acceptedKey(candidate) {
+            var at = candidate.search(/[:=]/);
+            var answer = at < 0 ? '' : candidate.slice(at + 1).replace(edges, '').toLowerCase();
+            return answer === '1' || answer === 'true' ? candidate.slice(0, at).replace(edges, '') : null;
+        }
+        expected = (expected || '').trim();
+        return expected !== '' && value.split(/[,;|&\s]+/).some(function (token) {
+            token = token.replace(edges, '');
+            var equals = token.indexOf('=');
+            var candidates = [token, equals < 0 ? '' : token.slice(equals + 1).replace(edges, '')];
+            return candidates.some(function (candidate) {
+                return candidate !== '' && (candidate === expected || acceptedKey(candidate) === expected);
+            });
+        });
+    }
+    function decoded(value) {
+        try {
+            return decodeURIComponent(value);
+        } catch (error) {
+            return value;
+        }
+    }
+    if (settings.consentCookie) {
+        var prefix = settings.consentCookie + '=';
+        var cookie = document.cookie.split('; ').filter(function (entry) {
+            return entry.indexOf(prefix) === 0;
+        })[0];
+        if (cookie && cookieGrants(decoded(cookie.slice(prefix.length)), settings.consentCookieValue)) {
+            consent(true);
+        } else if (cookie && /(?:^|; )rs_consent=1(?:;|$)/.test(document.cookie)) {
+            consent(false);
+        }
+    }
+    if (settings.consentEvent) {
+        window.addEventListener(settings.consentEvent, function (event) {
+            consent(event.detail === true);
+        });
+    }
+})
+JS;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $script . '(' . $json . ');', false) ?>

@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="returnsentry" translate="label" sortOrder="400">
+            <label>ReturnSentry</label>
+        </tab>
+        <section id="returnsentry" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>ReturnSentry</label>
+            <tab>returnsentry</tab>
+            <resource>ReturnSentry_Connector::config</resource>
+            <group id="general" translate="label" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Connection</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable ReturnSentry</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="api_url" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1">
+                    <label>ReturnSentry URL</label>
+                    <comment>Address of your ReturnSentry instance, for example https://returnsentry.example.com</comment>
+                    <validate>validate-url</validate>
+                    <backend_model>ReturnSentry\Connector\Model\Config\Backend\ApiUrl</backend_model>
+                </field>
+                <field id="secret_key" translate="label comment" type="obscure" sortOrder="30" showInDefault="1" showInWebsite="1">
+                    <label>Secret key</label>
+                    <comment>Starts with rs_sk_. Stored encrypted, used only between Magento and ReturnSentry.</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                </field>
+                <field id="publishable_key" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1">
+                    <label>Publishable key</label>
+                    <comment>Starts with rs_pk_. Public: the storefront beacon uses it.</comment>
+                    <backend_model>ReturnSentry\Connector\Model\Config\Backend\PublishableKey</backend_model>
+                </field>
+                <field id="checkout_timeout_ms" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1">
+                    <label>Checkout time budget (ms)</label>
+                    <comment>Past this delay, the checkout goes on as if ReturnSentry had allowed it. The ReturnSentry panels of orders and customers wait no longer.</comment>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                </field>
+                <field id="timeout_ms" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1">
+                    <label>Time budget for other calls (ms)</label>
+                    <comment>Sync, return assessment and refund authorization. Without an answer in time, the credit memo goes through, unless ReturnSentry last held this refund, or for a claim this order, on fraud evidence.</comment>
+                    <validate>required-entry validate-digits validate-greater-than-zero</validate>
+                </field>
+                <field id="test" translate="label" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Connection test</label>
+                    <frontend_model>ReturnSentry\Connector\Block\Adminhtml\System\Config\ConnectionTest</frontend_model>
+                </field>
+            </group>
+            <group id="features" translate="label" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Features</label>
+                <field id="checkout_decisions" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Checkout decisions</label>
+                    <comment>Observe: each order is assessed and shows what ReturnSentry would have done, with no effect. Enforce: "Review" flags the order, "Restricted payment" hides the risky payment methods chosen below (at least one method stays available), "Block" (operator decision only) refuses the order with a neutral message.</comment>
+                    <source_model>ReturnSentry\Connector\Model\Source\DecisionMode</source_model>
+                </field>
+                <field id="return_assessment" translate="label comment" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return assessment</label>
+                    <comment>Assesses each new return and shows the decision on the order. It never blocks the legal withdrawal.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="refund_authorization" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Refund authorization</label>
+                    <comment>Asks ReturnSentry before every credit memo refunding a return or a parcel claim. Observe: the answer shows on the order, the credit memo is never stopped. Enforce: a hold or a denial stops the credit memo, unless an administrator allowed to override refunds anyway with a reason; if ReturnSentry does not answer, the credit memo goes through except after a hold on fraud evidence.</comment>
+                    <source_model>ReturnSentry\Connector\Model\Source\DecisionMode</source_model>
+                </field>
+                <field id="beacon" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Beacon</label>
+                    <comment>Loads the ReturnSentry device beacon on the storefront, following the Beacon section below.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="excluded_payment_methods" translate="label comment" type="multiselect" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Payment methods excluded from control</label>
+                    <comment>Methods whose payment and refunds an external checkout handles, such as Global-e. Placing an order paid with one of them is neither assessed nor stopped, and its credit memos ask no refund authorization. The payment method list, computed before any method is chosen, is still assessed like any cart's. Orders are still sent to ReturnSentry. Global-e (globale) by default.</comment>
+                    <source_model>Magento\Payment\Model\Config\Source\Allmethods</source_model>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+            </group>
+            <group id="checkout" translate="label" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Checkout</label>
+                <field id="risky_payment_methods" translate="label comment" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Risky payment methods</label>
+                    <comment>Deferred, pay later, split or cash on delivery methods to hide when ReturnSentry restricts payment, with checkout decisions enforced. None by default.</comment>
+                    <source_model>Magento\Payment\Model\Config\Source\Allmethods</source_model>
+                    <can_be_empty>1</can_be_empty>
+                </field>
+            </group>
+            <group id="privacy" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1">
+                <label>Pseudonymization</label>
+                <field id="pseudonymize" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1">
+                    <label>Pseudonymize personal data</label>
+                    <comment>Sends a hashed email and address and phone fingerprints instead of clear values, and no IP address. ReturnSentry then shows tokens instead of emails.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <backend_model>ReturnSentry\Connector\Model\Config\Backend\Pseudonymize</backend_model>
+                </field>
+                <field id="salt" translate="label comment" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="1">
+                    <label>Pseudonymization secret</label>
+                    <comment>At least 32 characters, never changed once data has been sent. Use the same secret as any history export.</comment>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <depends>
+                        <field id="pseudonymize">1</field>
+                    </depends>
+                </field>
+            </group>
+            <group id="mapping" translate="label" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Mapping</label>
+                <field id="return_reasons" translate="label comment" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Return reasons</label>
+                    <comment>Your return reason labels or codes, in every language, and their standard reason. Unknown labels count as "No reason". A customer return stays a customer return whatever its reason, even "not collected": only a parcel the carrier brought back uncollected is a return to sender, and it never comes from this table.</comment>
+                    <frontend_model>ReturnSentry\Connector\Block\Adminhtml\System\Config\ReturnReasonMap</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                </field>
+                <field id="refund_code_field" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit memo reason code field</label>
+                    <comment>Optional. Name of the credit memo field that holds your refund reason code, when your shop has one.</comment>
+                </field>
+                <field id="refund_codes" translate="label comment" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit memo reason codes</label>
+                    <comment>Your refund reason codes and their standard category. A code missing from this list counts as "Other".</comment>
+                    <frontend_model>ReturnSentry\Connector\Block\Adminhtml\System\Config\RefundCodeMap</frontend_model>
+                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
+                </field>
+                <field id="refund_with_return" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit memo on an order with a return</label>
+                    <source_model>ReturnSentry\Connector\Model\Source\RefundCategory</source_model>
+                </field>
+                <field id="refund_adjustment_only" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit memo with no item, adjustment only</label>
+                    <source_model>ReturnSentry\Connector\Model\Source\RefundCategory</source_model>
+                </field>
+                <field id="refund_not_shipped" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit memo on an order not shipped</label>
+                    <source_model>ReturnSentry\Connector\Model\Source\RefundCategory</source_model>
+                </field>
+                <field id="refund_shipped" translate="label comment" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Credit memo on a shipped order without return</label>
+                    <comment>Other by default: such a refund is checked as a parcel claim only when you choose a claim category here or map its credit memo code. Returns reach the check through Adobe Commerce RMA or ReturnReporterInterface. Refund authorization applies to returns, parcels returned to sender, claims and evidence categories, never to the neutral ones.</comment>
+                    <source_model>ReturnSentry\Connector\Model\Source\RefundCategory</source_model>
+                </field>
+            </group>
+            <group id="beacon" translate="label comment" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Beacon</label>
+                <comment>In France and the European Union, reading the device needs the visitor's consent, except to secure sign-in. Wire your consent manager as described in the module README.</comment>
+                <field id="loading" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Load the beacon</label>
+                    <source_model>ReturnSentry\Connector\Model\Source\BeaconLoading</source_model>
+                </field>
+                <field id="consent_cookie" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Consent cookie</label>
+                    <comment>Optional. Name of the cookie your consent manager sets.</comment>
+                    <backend_model>ReturnSentry\Connector\Model\Config\Backend\ConsentCookie</backend_model>
+                </field>
+                <field id="consent_cookie_value" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Consent cookie value</label>
+                    <comment>Required with a consent cookie. A whole token of the cookie, between , ; | &amp; or spaces, that means consent: returnsentry for Axeptio's authorized vendors, C0004:1 for an accepted OneTrust group. A name alone, such as C0004, also matches C0004:1, C0004=1 or C0004:true, never C0004:0. Didomi encodes its cookie: use the consent event.</comment>
+                </field>
+                <field id="consent_event" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Consent event</label>
+                    <comment>Browser event on window: detail true grants consent, detail false withdraws it.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

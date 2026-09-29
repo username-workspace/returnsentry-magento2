@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="customer_save_after_data_object">
+        <observer name="returnsentry_publish_customer" instance="ReturnSentry\Connector\Observer\PublishCustomer"/>
+    </event>
+    <event name="customer_delete_commit_after">
+        <observer name="returnsentry_publish_erasure" instance="ReturnSentry\Connector\Observer\PublishErasure"/>
+    </event>
+    <event name="sales_order_save_commit_after">
+        <observer name="returnsentry_publish_order" instance="ReturnSentry\Connector\Observer\PublishOrder"/>
+    </event>
+    <event name="sales_order_shipment_track_save_commit_after">
+        <observer name="returnsentry_publish_shipment_track" instance="ReturnSentry\Connector\Observer\PublishShipmentTrack"/>
+    </event>
+    <event name="sales_order_creditmemo_save_commit_after">
+        <observer name="returnsentry_publish_creditmemo" instance="ReturnSentry\Connector\Observer\PublishCreditmemo"/>
+    </event>
+    <event name="rma_save_commit_after">
+        <observer name="returnsentry_publish_rma" instance="ReturnSentry\Connector\Observer\PublishRma"/>
+    </event>
+    <event name="core_abstract_save_commit_after">
+        <observer name="returnsentry_publish_rma_track" instance="ReturnSentry\Connector\Observer\PublishRmaTrack"/>
+    </event>
+    <event name="sales_model_service_quote_submit_before">
+        <observer name="returnsentry_capture_visitor_id" instance="ReturnSentry\Connector\Observer\CaptureVisitorId"/>
+        <observer name="returnsentry_apply_checkout_decision" instance="ReturnSentry\Connector\Observer\ApplyCheckoutDecision"/>
+    </event>
+</config>

@@ -1,0 +1,104 @@
+<?php
+/** @var \Magento\Framework\View\Element\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \ReturnSentry\Connector\ViewModel\RiskPanel $viewModel */
+$viewModel = $block->getData('view_model');
+$panel = $block->getData('context') === 'customer' ? $viewModel->forCustomer() : $viewModel->forOrder();
+if ($panel === null) {
+    return;
+}
+$risk = $panel['risk'];
+?>
+<section class="admin__page-section returnsentry-panel">
+    <div class="admin__page-section-title">
+        <span class="title"><?= $escaper->escapeHtml(__('ReturnSentry')) ?></span>
+    </div>
+    <div class="admin__page-section-content">
+        <?php if (!empty($panel['checkout'])): ?>
+            <p>
+                <strong><?= $escaper->escapeHtml(__('At checkout:')) ?></strong>
+                <?= $escaper->escapeHtml(__(
+                    '%1 (level %2, score %3)',
+                    $panel['checkout']['action'],
+                    $panel['checkout']['level'],
+                    $panel['checkout']['score']
+                )) ?>
+            </p>
+        <?php endif; ?>
+        <?php if (!empty($panel['returnTerms'])): ?>
+            <p>
+                <strong><?= $escaper->escapeHtml(__('Return terms announced:')) ?></strong>
+                <?= $escaper->escapeHtml($panel['returnTerms']) ?>
+            </p>
+        <?php endif; ?>
+        <?php if ($risk['status'] === 'known'): ?>
+            <p>
+                <strong><?= $escaper->escapeHtml(__('Customer risk today:')) ?></strong>
+                <?= $escaper->escapeHtml(__('level %1, score %2', $risk['level'], $risk['score'])) ?>
+                <a href="<?= $escaper->escapeUrl($risk['url']) ?>" target="_blank" rel="noopener">
+                    <?= $escaper->escapeHtml(__('Open in the ReturnSentry console')) ?>
+                </a>
+            </p>
+            <?php if ($risk['reasons']): ?>
+                <ul>
+                    <?php foreach ($risk['reasons'] as $reason): ?>
+                        <li><?= $escaper->escapeHtml($reason) ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            <?php endif; ?>
+        <?php elseif ($risk['status'] === 'unavailable'): ?>
+            <p><?= $escaper->escapeHtml(__('ReturnSentry is unavailable right now.')) ?></p>
+        <?php else: ?>
+            <p><?= $escaper->escapeHtml(__('ReturnSentry does not know this customer yet.')) ?></p>
+        <?php endif; ?>
+        <?php if (!empty($panel['returns'])): ?>
+            <table class="data-table admin__table-primary">
+                <thead>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Return')) ?></th>
+                        <th><?= $escaper->escapeHtml(__('Decision')) ?></th>
+                        <th><?= $escaper->escapeHtml(__('Meaning')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($panel['returns'] as $return): ?>
+                        <tr>
+                            <td><?= $escaper->escapeHtml($return['externalId']) ?></td>
+                            <td><?= $escaper->escapeHtml($return['action'] ?? __('Not assessed')) ?></td>
+                            <td><?= $escaper->escapeHtml($return['meaning'] ?? '') ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+        <?php if (!empty($panel['refunds'])): ?>
+            <table class="data-table admin__table-primary">
+                <thead>
+                    <tr>
+                        <th><?= $escaper->escapeHtml(__('Refund authorization')) ?></th>
+                        <th><?= $escaper->escapeHtml(__('Decision')) ?></th>
+                        <th><?= $escaper->escapeHtml(__('Requested')) ?></th>
+                        <th><?= $escaper->escapeHtml(__('Approved')) ?></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($panel['refunds'] as $refund): ?>
+                        <tr>
+                            <td><?= $escaper->escapeHtml($refund['externalId']) ?></td>
+                            <td>
+                                <?= $escaper->escapeHtml($refund['decision']) ?>
+                                <?php foreach ($refund['details'] as $detail): ?>
+                                    <br/><?= $escaper->escapeHtml($detail) ?>
+                                <?php endforeach; ?>
+                            </td>
+                            <?php foreach (['requested', 'approved'] as $amount): ?>
+                                <?php $formatted = sprintf('%.2f %s', $refund[$amount], $refund['currency']); ?>
+                                <td><?= $escaper->escapeHtml($formatted) ?></td>
+                            <?php endforeach; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        <?php endif; ?>
+    </div>
+</section>

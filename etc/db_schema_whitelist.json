@@ -1,0 +1,95 @@
+{
+    "sales_order": {
+        "column": {
+            "returnsentry_visitor_id": true,
+            "returnsentry_action": true,
+            "returnsentry_observed_action": true,
+            "returnsentry_level": true,
+            "returnsentry_score": true,
+            "returnsentry_return_paid": true,
+            "returnsentry_return_label_cost": true,
+            "returnsentry_erased": true
+        }
+    },
+    "sales_order_grid": {
+        "column": {
+            "returnsentry_action": true
+        },
+        "index": {
+            "SALES_ORDER_GRID_RETURNSENTRY_ACTION": true
+        }
+    },
+    "returnsentry_return": {
+        "column": {
+            "external_id": true,
+            "order_id": true,
+            "requested_at": true,
+            "record": true,
+            "assessment": true
+        },
+        "index": {
+            "RETURNSENTRY_RETURN_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "RETURNSENTRY_RETURN_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        }
+    },
+    "returnsentry_inspection": {
+        "column": {
+            "external_id": true,
+            "order_id": true,
+            "record": true
+        },
+        "index": {
+            "RETURNSENTRY_INSPECTION_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "RETURNSENTRY_INSPECTION_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        }
+    },
+    "returnsentry_refund_authorization": {
+        "column": {
+            "external_id": true,
+            "order_id": true,
+            "decision": true,
+            "requested_amount": true,
+            "approved_amount": true,
+            "observed": true,
+            "fraud_evidence": true,
+            "note": true,
+            "category": true,
+            "claimed_at": true,
+            "hold_until": true,
+            "carrier": true,
+            "decided_by": true,
+            "override_rejected": true,
+            "updated_at": true
+        },
+        "index": {
+            "RETURNSENTRY_REFUND_AUTHORIZATION_ORDER_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "RETURNSENTRY_REFUND_AUTHORIZATION_ORDER_ID_SALES_ORDER_ENTITY_ID": true
+        }
+    },
+    "returnsentry_sync_retry": {
+        "column": {
+            "entity_type": true,
+            "entity_id": true,
+            "store_id": true,
+            "attempts": true,
+            "next_attempt_at": true,
+            "last_error": true,
+            "failed_at": true
+        },
+        "index": {
+            "RETURNSENTRY_SYNC_RETRY_NEXT_ATTEMPT_AT": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    }
+}

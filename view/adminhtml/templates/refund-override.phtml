@@ -1,0 +1,27 @@
+<?php
+/** @var \Magento\Backend\Block\Template $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \ReturnSentry\Connector\ViewModel\RefundOverride $viewModel */
+$viewModel = $block->getData('view_model');
+if (!$viewModel->isAvailable()) {
+    return;
+}
+?>
+<fieldset class="admin__fieldset returnsentry-override">
+    <div class="admin__field admin__field-option">
+        <input id="returnsentry_override" class="admin__control-checkbox" type="checkbox"
+               name="creditmemo[returnsentry_override]" value="1"/>
+        <label for="returnsentry_override" class="admin__field-label">
+            <?= $escaper->escapeHtml(__('Refund despite ReturnSentry')) ?>
+        </label>
+    </div>
+    <div class="admin__field">
+        <label for="returnsentry_override_reason" class="admin__field-label">
+            <span><?= $escaper->escapeHtml(__('Reason, recorded in the order history')) ?></span>
+        </label>
+        <div class="admin__field-control">
+            <textarea id="returnsentry_override_reason" class="admin__control-textarea" rows="2"
+                      name="creditmemo[returnsentry_override_reason]"></textarea>
+        </div>
+    </div>
+</fieldset>
